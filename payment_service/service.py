@@ -1,10 +1,10 @@
 import random
 import uuid
 from datetime import datetime
-from producer import send_event
+from kafka_producer import send_event
 
 def process_payment(event):
-    order_id = event_id.get("order_id")
+    order_id = event.get("order_id")
 
     # simulate success/failure
     success = random.choice([True, True, False, True])
