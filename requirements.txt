@@ -1,2 +1,4 @@
 kafka-python
 fastapi
+psycopg2-binary
+uvicorn

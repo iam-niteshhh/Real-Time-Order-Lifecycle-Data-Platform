@@ -3,10 +3,10 @@ import json
 
 
 producer = KafkaProducer(
-    value_serializer = lambda v: json.dumps(v).encode("utf-8")
-    bootstrap_server = "localhost:9092"
+    value_serializer = lambda v: json.dumps(v).encode("utf-8"),
+    bootstrap_servers = "localhost:9092"
 )
 
 def send_event(event):
-    producer.send("order-events", value=event)
+    producer.send("order_events", value=event)
     producer.flush()

@@ -8,5 +8,5 @@ producer = KafkaProducer(
 )
 
 def send_event(event):
-    producer.send("order-events", value=event)
+    producer.send("order_events", value=event)
     producer.flush()

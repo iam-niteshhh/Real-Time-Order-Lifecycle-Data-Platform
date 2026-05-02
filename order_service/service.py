@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from kafka_producer import send_event
+from order_service.kafka_producer import send_event
 
 
 def create_order(data):

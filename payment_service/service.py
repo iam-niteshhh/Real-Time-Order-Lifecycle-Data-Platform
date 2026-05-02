@@ -10,7 +10,7 @@ def process_payment(event):
     success = random.choice([True, True, False, True])
 
     payment_event = {
-        "event_id": str(uuid.uuid4())
+        "event_id": str(uuid.uuid4()),
         "order_id": order_id,
         "user_id": event.get("user_id"),
         "event_type": "payment_success" if success else "payment_failed",
