@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 
 
-producer = KafkaProducer(
+producer = KafkaProducer(   
     value_serializer = lambda v: json.dumps(v).encode("utf-8"),
     bootstrap_servers = "localhost:9092"
 )

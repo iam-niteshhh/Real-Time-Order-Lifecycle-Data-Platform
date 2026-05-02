@@ -30,7 +30,7 @@ def get_order(order_id: str):
     
 
 @router.get("/orders/{order_id}/history")
-def get_order_history(order_id: int):
+def get_order_history(order_id: str):
     conn = get_db_connection()
     cusror = conn.cursor()
 

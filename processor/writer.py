@@ -1,17 +1,22 @@
 import json
 import psycopg2
 import os
+import time
 
+MAX_ATTEMPTS = 3
 # use to save raw events data to json file
 def write_json(data):
-    path = "data/raw_data.json"
-    if not os.path.exists("data"):
-        os.makedirs("data")
-    if not os.path.exists(path):
-        with open(path, 'w') as f:
-            json.dump([], f)
-    with open("data/raw_data.json", 'a') as f:
-        f.write(json.dumps(data, indent=4) + "\n")
+    order_id = data.get("order_id")
+    if not order_id:
+        raise ValueError("order_id is required")
+
+    dir_path = "data/orders"
+    os.makedirs(dir_path, exist_ok=True)
+
+    file_path = os.path.join(dir_path, f"{order_id}.jsonl")
+
+    with open(file_path, "a") as f:
+        f.write(json.dumps(data) + "\n")
 
 
 
@@ -25,19 +30,28 @@ db_connection = psycopg2.connect(
 cursor = db_connection.cursor()
 # use to save processed events data to postgres database
 def write_to_db(data):
-    insert_query = """
-    INSERT INTO order_events (event_id ,order_id, event_type, service, timestamp)
-    VALUES (%s, %s, %s, %s, %s)
-    ON CONFLICT (event_id) DO NOTHING;
-    """
-    cursor.execute(insert_query, (
-        data['event_id'],
-        data['order_id'],
-        data['event_type'],
-        data['service'],
-        data['timestamp']
-    ))
-    db_connection.commit()
+    for attempt in range(MAX_ATTEMPTS):
+        try:
+            insert_query = """
+            INSERT INTO order_events (event_id ,order_id, event_type, service, timestamp)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (event_id) DO NOTHING;
+            """
+            cursor.execute(insert_query, (
+                data['event_id'],
+                data['order_id'],
+                data['event_type'],
+                data['service'],
+                data['timestamp']
+            ))
+            db_connection.commit()
+            return True
+        except Exception as e:
+            print(f"Attempt {attempt + 1} failed: {e}")
+            db_connection.rollback()
+            time.sleep(2 ** attempt)  # Exponential backoff
+    print("All attempts to write to database failed.")
+    return False
 
 def upsert_order(data):
     update_query = """

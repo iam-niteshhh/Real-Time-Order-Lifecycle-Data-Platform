@@ -1,6 +1,7 @@
 from kafka import KafkaConsumer
 import json
 from writer import write_json, write_to_db, upsert_order
+from kafka_producer import send_to_dlq
 
 consumer = KafkaConsumer(
     'order_events',
@@ -20,8 +21,11 @@ for message in consumer:
 
 
     # store structured data to postgres database
-    write_to_db(event_data)
+    write_successful = write_to_db(event_data)
 
     # update order status in orders table
-    print(f"event {event_data}")
-    upsert_order(event_data)
+    if write_successful:
+        print(f"event {event_data}")
+        upsert_order(event_data)
+    else:
+        send_to_dlq(event_data)
